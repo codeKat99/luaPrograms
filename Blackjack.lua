@@ -4,7 +4,7 @@
     Blackjack game - Object's file
 ]]
 
-
+-- Card object
 Card = { 
     value=0,
     suit="",
@@ -18,25 +18,12 @@ end,
 showFace = function (self)
     print(self.face)
 end,
---[[
-printSelf = function (self)
-    if(self.value > 1 and self.value<10) do print("I am a " + self.value + "of " + self.suit)
-    else 
+printSelf = function(self)
+    if(self.face =="none") then io.write(self.value, " of ", self.suit)
+    else io.write(self.face, " of ", self.suit)
     end
-]]
+end
 }
-
-TableThatActsLikeAnObject = {
-    myInt = 1,
-    myDouble = 2.5,
-    addMyStuff = function (self)
-        myTotal = self.myInt + self.myDouble
-        print("Wow, my total adds up to " + myTotal)
-        return myTotal
-    end
-}
-
-
 
 
 function Card:new (cardObj)
@@ -46,48 +33,63 @@ function Card:new (cardObj)
     return cardObj
   end
 
-joker = Card:new{value = 5, suit = "Spade", face = "King"}
-joker:showValue()
 
+--Deck object, contains methods:
+-- printDeck, makeDeck, and shuffleDeck
 Deck = { 
     deckCards = {},
     totalCards=52,
     suits = {"Spades", "Diamonds", "Hearts", "Clubs"},
     face = {"King", "Queen", "Jack"},
 
-    
---for loops, cycle through values of each suit        
+printDeck = function (self)
+    for i=1, self.totalCards, 1 do 
+        self.deckCards[i]:printSelf()
+        io.write( " " ,i, "\n")
+    end
+end,
+
+
+-- Instantiates a deck with 4 cards of each value that contain a different suit       
 makeDeck = function (self)
-    for key,value in pairs(self.suits) do
-        for i= 1,13,1 do
-            if(i==1)      then self.deckCards[i*key]= Card:new{value=11, suit=value, face="Ace"}
-            elseif(i<=10) then self.deckCards[i*key]= Card:new{value=i, suit=value, face="none"}
-            elseif(i==11) then self.deckCards[i*key]=Card:new{value=10, suit=value, face="Jack"}
-            elseif(i==12) then self.deckCards[i*key]=Card:new{value=10, suit=value, face="Queen"}
-            else self.deckCards[i*key]=Card:new{value=10, suit=value, face="King"} 
+    count = 0
+    for key,suitValue in pairs(self.suits) do
+        for i= 1,13,1 do -- for int i =1; i<=13 ; i++
+            count = count+1
+            if(i==1)      then self.deckCards[(key-1)*13 + i]= Card:new{value=11, suit=suitValue, face="Ace"}
+            elseif(i>1 and i<=10) then self.deckCards[(key-1)*13 + i]= Card:new{value=i, suit=suitValue, face="none"}
+            elseif(i==11) then self.deckCards[(key-1)*13 + i]=Card:new{value=10, suit=suitValue, face="Jack"}
+            elseif(i==12) then self.deckCards[(key-1)*13 + i]=Card:new{value=10, suit=suitValue, face="Queen"}
+            else self.deckCards[(key-1)*13 + i]=Card:new{value=10, suit=suitValue, face="King"} 
             end
         end
     end
-    print("New Deck Created")
-    --self.deckCards.shuffleDeck()
+    print("\nNew Deck Created")
+    self:shuffleDeck()
 end,
-}
 
---[[
+-- Creates a temp Deck and populates each index with a random card from the original Deck
+-- Points original Deck to the temp Deck
 shuffleDeck = function (self)
-    tempDeck = {},
+    tempDeck = {self.totalCards}
+    randIndex = 0
+    cardsRemaining = self.totalCards
+    counter = 0
+    for i= 1,self.totalCards,1 do
+        counter = counter +1
+        math.randomseed(os.time()) 
+        local randIndex = math.random(1, cardsRemaining)
+        cardsRemaining = cardsRemaining-1
+        tempDeck[i] = table.remove(self.deckCards, randIndex)
+       
+    end
     
-    
+    self.deckCards = tempDeck
     print("Deck has been shuffled")
-end,
-
-checkDeck = function (self)
-    local count = 0
-    for value in pairs(self.deckCards) do count = count + 1 end
-    if(count < 13) then self.deckCards.makeDeck() end
+    print("Counter: " , counter)
 end,
 }
-]]
+
 
 
 
@@ -95,21 +97,18 @@ function Deck:new (deckObj)
     deckObj = deckObj or {}
     setmetatable(deckObj, self)
     self.__index = self
-    deckObj.makeDeck(deckObj)
+    deckObj:makeDeck()
     return deckObj
 end
 
 joker2 = Card:new{}
+
 newDeck = Deck:new{}
+
+
+newDeck:printDeck()
 --newDeck.makeDeck(newDeck)
-print(newDeck.deckCards[3]:showSuit())
-
-
-
-
-
-
-
+--print( newDeck.deckCards[1]:printSelf())
 
 
 
@@ -160,7 +159,16 @@ print(newDeck.deckCards[3]:showSuit())
 --[[
 
 
-
+Table Reference:
+TableThatActsLikeAnObject = {
+    myInt = 1,
+    myDouble = 2.5,
+    addMyStuff = function (self)
+        myTotal = self.myInt + self.myDouble
+        print("Wow, my total adds up to " + myTotal)
+        return myTotal
+    end
+}
 
 
 
