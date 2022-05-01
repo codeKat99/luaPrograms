@@ -4,35 +4,38 @@
     Blackjack game - Object's file
 ]]
 
--- Card object
-Card = { 
-    value=0,
+-- Card "object" 
+Card = {  -- "Object" because it is stil just a table for now
+    value=0, -- this lets us do Card.value = ...
     suit="",
     face="",
-showValue = function (self)
-    print(self.value)
-end,
-showSuit = function (self)
-    print(self.suit)
-end,
-showFace = function (self)
-    print(self.face)
-end,
-printSelf = function(self)
-    if(self.face =="none") then io.write(self.value, " of ", self.suit)
-    else io.write(self.face, " of ", self.suit)
+    showValue = function (self) 
+        print(self.value)
+    end,
+    showSuit = function (self)
+        print(self.suit)
+    end,
+    showFace = function (self)
+        print(self.face)
+    end,
+    printSelf = function(self)
+        if(self.face =="none") then io.write(self.value, " of ", self.suit)
+        else io.write(self.face, " of ", self.suit)
     end
 end
 }
-
-
 function Card:new (cardObj)
     cardObj = cardObj or {}   -- create object if user does not provide one
-    setmetatable(cardObj, self) -- In this case, we are making
-    self.__index = self
+    setmetatable(cardObj, self) -- The original Card is the metatable for cardObj,
+    self.__index = self -- The new cardObj will "inherit" any functions it doesn't have from Card
     return cardObj
   end
+newCard = Card:new{suit="Spades",face="NewSuit"}
+newCard.printSelf(newCard)
+newCard:printSelf();
 
+newCard2 = newCard:new{suit="Yes"}
+newCard2:printSelf();
 
 --Deck object, contains methods:
 -- printDeck, makeDeck, and shuffleDeck
