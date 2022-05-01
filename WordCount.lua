@@ -80,4 +80,4 @@ end
 print("Calling for function to see what the top X=10 most frequent words were in the text: ".. textfile );
 topX(wordCount,10)
 print("Calling for function to see what 5 most INFREQUENT words were in the text: ".. textfile );
-bottomX(wordCount,10)
+bottomX(wordCount,5)
