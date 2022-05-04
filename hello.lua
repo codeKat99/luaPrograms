@@ -1,3 +1,4 @@
+
 local boringBool = true
 if boringBool then
     GlobA=15.0  -- Notice that when we mouse over this, it is actually a global variable! Will be demonstrated below
@@ -9,3 +10,4 @@ print(boringBool) -- Declared locally outside the if/then, will retain the reass
 print("Hello world" , GlobA)-- Since declared globally, is still available outside if/then's scope
 print("Oops, this won't work!", locB) -- locB is nil because we specifically declared it local.
 MyFun() -- prints "20.0" 
+
