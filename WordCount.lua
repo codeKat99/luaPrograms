@@ -1,7 +1,7 @@
 textfile = 'testfile.txt'
 file = io.open(textfile, "r")
 lines = file:lines()
-
+print("Amount of memory used after opening file, but before loading into table... " .. collectgarbage("count"))
 function split (inputstr, sep)
     if sep == nil then
             sep = "%s" -- %s is whitespace in lua
@@ -19,7 +19,7 @@ for i, v in pairs(tab) do
 end
 
 --]]
-wordCount = {}
+
 function manageWords (wordTable, word)
     if wordTable[word] ~= nil then
         wordTable[word] = wordTable[word] + 1
@@ -59,7 +59,7 @@ function bottomX(wordTable, numWords)
 end
     
 
-
+wordCount = {}
 print("Reading in file...");
 for line in lines do
     words = split(line, " ")
@@ -77,7 +77,12 @@ for key,value in pairs(wordCount) do
     print(key .. " appeared " .. value .. " times!")
 end
 --]]
+print("Amount of memory used with loaded table " .. collectgarbage("count"))
 print("Calling for function to see what the top X=10 most frequent words were in the text: ".. textfile );
 topX(wordCount,10)
 print("Calling for function to see what 5 most INFREQUENT words were in the text: ".. textfile );
 bottomX(wordCount,5)
+wordCount = nil
+print("Amount of memory with larget table set to nil... " .. collectgarbage("count"))
+collectgarbage("collect")
+print("Amount of memory with larget table set to nil and call to collect garbage immediately.... " .. collectgarbage("count"))
