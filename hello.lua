@@ -9,3 +9,8 @@ end
 
 print("Hello world" , a)
 print("Oops, this won't work!", b) -- b is nil because we specifically declared it local.
+
+printMe = function() print("Hello there") end
+printMe = function(hi) print(hi) end
+printMe()
+printMe("Hi")
