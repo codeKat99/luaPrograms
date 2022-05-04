@@ -27,57 +27,61 @@ function manageWords (wordTable, word)
     end
 end
 
-function topX(wordTable, numWords)
-    local topXWords = {}
-    for i=1, numWords,1 do
-        local tempWordPair = {num=0, word=""}
+function topX(wordTable, numWords)  -- take a table of word,#appearing pairs, and how many of the frequent words you want
+    local topXWords = {} -- empty table for now
+    for i=1, numWords,1 do -- until we've filled bottomXWords with NumWords words...
+        local tempWordPair = {num=0, word=""} -- Using this table to track the current most frequent word and its count
         for word, count in pairs(wordTable) do
-            if(topXWords[word]==nil and wordTable[word] > tempWordPair.num) then 
-                tempWordPair.num = wordTable[word]
+            if(topXWords[word]==nil and wordTable[word] > tempWordPair.num) then -- if we find a word with a higher count
+                --and it isn't already in topXWords,
+                tempWordPair.num = wordTable[word] --mark it as potentially the nex top word
                 tempWordPair.word=word
             end
         end
-        topXWords[tempWordPair.word]=tempWordPair.num
+        topXWords[tempWordPair.word]=tempWordPair.num -- record the new top word.
         print(tempWordPair.word .. " appeared " .. tempWordPair.num .. " times!")
     end
     return topXWords
 end
+
+
 function bottomX(wordTable, numWords)
-    local topXWords = {}
-    for i=1, numWords,1 do
-        local tempWordPair = {num=99999999, word=""}
+    local bottomXWords = {} 
+    for i=1, numWords,1 do 
+        local tempWordPair = {num=99999999, word=""} 
         for word, count in pairs(wordTable) do
-            if(topXWords[word]==nil and wordTable[word] < tempWordPair.num) then 
+            if(bottomXWords[word]==nil and wordTable[word] < tempWordPair.num) then 
                 tempWordPair.num = wordTable[word]
                 tempWordPair.word=word
             end
         end
-        topXWords[tempWordPair.word]=tempWordPair.num
+        bottomXWords[tempWordPair.word]=tempWordPair.num
         print(tempWordPair.word .. " appeared " .. tempWordPair.num .. " times!")
     end
-    return topXWords
+    return bottomXWords
 end
     
 
-wordCount = {}
+WordCount = {} -- empty table
 print("Reading in file...");
 for line in lines do
-    words = split(line, " ")
-    for i, v in pairs(words) do
-        first,last = string.find(v,"%w*'?%w?")
-        if first ~=nil and last~=nil then
-            fixedWord = string.sub(v,first,last)
-            manageWords(wordCount,fixedWord)
+    words = split(line, " ") -- split by spaces
+    for i, v in pairs(words) do -- iterate through key,val pair
+        first,last = string.find(v,"%w*'?%w?") -- find the actual words, no spaces
+        if first ~=nil and last~=nil then -- if string.find failed, just skip
+            fixedWord = string.sub(v,first,last) -- get the trimmed word based on the indeces we found
+            manageWords(WordCount,fixedWord) -- increment our WordCount for that word
     end
     end
-    --print("\n")
 end
+
+
 --[[]
 for key,value in pairs(wordCount) do
     print(key .. " appeared " .. value .. " times!")
 end
 --]]
 print("Calling for function to see what the top X=10 most frequent words were in the text: ".. textfile );
-topX(wordCount,10)
+topX(WordCount,10)
 print("Calling for function to see what 5 most INFREQUENT words were in the text: ".. textfile );
-bottomX(wordCount,5)
+bottomX(WordCount,5)
