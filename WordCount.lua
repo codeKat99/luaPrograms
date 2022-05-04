@@ -19,7 +19,7 @@ for i, v in pairs(tab) do
 end
 
 --]]
-wordCount = {}
+
 function manageWords (wordTable, word)
     if wordTable[word] ~= nil then
         wordTable[word] = wordTable[word] + 1
@@ -59,7 +59,7 @@ function bottomX(wordTable, numWords)
 end
     
 
-
+wordCount = {}
 print("Reading in file...");
 for line in lines do
     words = split(line, " ")
