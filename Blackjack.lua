@@ -43,6 +43,7 @@ Deck = {
     suits = {"Spades", "Diamonds", "Hearts", "Clubs"},
     face = {"King", "Queen", "Jack"},
    
+--Deck is initialized with a card from each suit starting from Ace->King
 makeDeck = function (self)
 
     for i=1, 13, 1 do
@@ -78,13 +79,12 @@ shuffleDeck = function (self)
         end
         self.deckCards = tempDeck
     end
-    --print(" & the deck has been shuffled ")
 
 end,
 
--- If there are <6 cards in the deck, make a new shuffled deck
+-- If there are < 12 cards in the deck, make a new shuffled deck
 checkDeck = function (self)
-    if (self.cardsInDeck < 6) then self:makeDeck() end
+    if (self.cardsInDeck < 12) then self:makeDeck() end
 end,
 
 printDeck = function (self)
@@ -96,7 +96,7 @@ printDeck = function (self)
 end
 }
 
-
+--"Default constructor"
 function Deck:new (deckObj)
     deckObj = deckObj or {}
     setmetatable(deckObj, self)
@@ -107,10 +107,12 @@ end
 
 
 Hand = {
-    handObj = {},
+    handObj = {}, -- if you don't override this, it can be a reference (BAD!)
     cardsInHand = 0,
     totalValue = 0,
 
+    --Checks if the deck needs to be shuffled first, then inserts
+    -- a card into the players hand from the top of the deck
     addCard = function(self, theDeck)
         theDeck:checkDeck()
         self.cardsInHand = self.cardsInHand + 1
@@ -119,6 +121,7 @@ Hand = {
         self.totalValue = self.totalValue + self.handObj[self.cardsInHand].value
     end,
 
+    --Inserts cards from players hand back into the end of the deck
     returnCardsToDeck = function(self, theDeck)
         for index, card in pairs(self.handObj) do
             theDeck.cardsInDeck = theDeck.cardsInDeck + 1
@@ -129,37 +132,28 @@ Hand = {
         self.totalValue = 0
     end,
 
+    -- Prints the value 
     calcHandValue = function(self)
         local tempVal = 0
         for i=1, self.cardsInHand, 1 do
             tempVal = tempVal + self.handObj[i].value
         end
         self.totalValue = tempVal
-        if self.totalValue == 21 then return "Blackjack!!"
-        --else if (self.totalValue >21 and)
-        else return self.totalValue end
+        
+        if self.totalValue == 21 then print("Blackjack!!")
+        elseif self.totalValue > 21 then print("Bust!!")
+        else io.write("Total Hand Value = ", self:calcHandValue()) end
+        print()
     end,
 
 
-
-
-
+    -- Prints the value of each card in the players hand 
     showHand = function(self)
         for key, value in pairs(self.handObj) do
             value:printSelf();
             print();
         end
-      --  end
-     --   for i=1, self.cardsInHand, 1 do
-    --        self.cardsInHand[i]:printSelf()
-    --        io.write( " " ,i, "\n")
-    --    end
-
-        if self.totalValue == 21 then print("Blackjack!!")
-        elseif self.totalValue > 21 then print("Bust!!")
-        else io.write("Total Hand Value = ", self:calcHandValue()) end
-        print()
-
+        self:calcHandValue()
 
     end
 
@@ -175,10 +169,19 @@ end
 
 
 
-Game = {
-    startNewRound = function(deck,...)
+Game = { -- a game table that holds functions related to managing the hands
+    startNewRound = function(deck,...) -- version that accepts a variable number of Hand objects, not stored in a table
 
         local hands = {...}
+        io.write("Returning the cards of " .. #hands .. " hands.\n" )
+        for index, hand in pairs(hands) do
+            hand:returnCardsToDeck(deck)
+            deck:shuffleDeck()
+        end
+        deck:shuffleDeck()
+    end,
+    startNewRoundTableVers = function(deck,hands) --version that expects a Table of Hand Objects
+
         io.write("Returning the cards of " .. #hands .. " hands.\n" )
         for index, hand in pairs(hands) do
             hand:returnCardsToDeck(deck)
@@ -190,241 +193,97 @@ Game = {
 }
 
 local newDeck = Deck:new{}
-local player = Hand:new{handObj={}, cardsInHand = 0, totalValue = 0}
-local dealer = Hand:new{handObj={},cardsInHand = 0, totalValue = 0}
+print("\nHow many other players do you want? There are always you and the dealer. There can be up to 3 more");
+print("Input 1, 2, or 3")
+NumPlayers = io.read()
+if (NumPlayers ~= "1" and NumPlayers ~= "2" and NumPlayers ~= "3"  )then NumPlayers = 2
+else NumPlayers = NumPlayers + 2 -- number of players is min 2 + the number provided
+end
+local playerTable = {}
+
+--
+function nameAndCards(self)
+    io.write("\n" .. self.name .. " has:" )
+    for key, card in pairs(self.handObj) do 
+        card:printSelf()
+        io.write(", ")
+    end
+    io.write("Total value: " .. self.totalValue .. "\n" )
+end
+for i=1, NumPlayers,1 do
+    playerTable[i] = Hand:new{handObj={}, cardsInHand = 0, totalValue = 0, showNameAndCards = nameAndCards} -- initalize new hands. We are making a slightly new version of hands that includes showNameAndCards function
+    if (i==1) then playerTable[i].name = "Human Player (You)" -- slightly new version of  Hand also includes the player names
+    elseif(i==2) then playerTable[i].name = "Dealer"
+    else playerTable[i].name = "Player " .. i
+    end
+end
 nextMove = ""
 print("\nYou're now playing blackjack!")
 while (nextMove~="quit") do
-    player:addCard(newDeck)
-    dealer:addCard(newDeck)
-    player:addCard(newDeck)
-    dealer:addCard(newDeck)
-    --Hands are dealt, game begins
-    print("\nDealers card: ")
-    dealer.handObj[1]:printSelf()
-    print("\n\nYour cards: ")
-    player:showHand()
-    while (player.totalValue < 21 and nextMove ~="quit") do
+    for index, player in pairs(playerTable) do
+        player:addCard(newDeck) -- deal two cards
+        player:addCard(newDeck)
+        if(playerTable.name == "Dealer") then player.handObj[1]:printSelf() -- dealer only shows one card
+        else player:showNameAndCards()
+        end
+    end
+    print("The other players are drawing cards..")
+    for index, player in pairs(playerTable) do -- if the player has a bad hand, keep drawing until it's too risky
+        if(player.name~="Human Player (You)") then
+            while (player.totalValue < 13) do
+                player:addCard(newDeck)
+            end
+        end
+    end
+
+    while (playerTable[1].totalValue <= 21 and nextMove ~="quit") do -- player's while loop
         print("\nHit or stay?")
         if(nextMove == "hit") then 
-            player:addCard(newDeck)
-            player:showHand()
-
-            if(player.totalValue > 21) then 
-                io.write("You and the dealer are getting new hands...")
-                --player:returnCardsToDeck(newDeck)
-                --dealer:returnCardsToDeck(newDeck)
-                --newDeck:shuffleDeck()
-                Game.startNewRound(newDeck, player, dealer)
-                dealer:addCard(newDeck)
-                player:addCard(newDeck)
-                dealer:addCard(newDeck)
-                player:addCard(newDeck)
-                print("\nDealers card: ")
-                dealer.handObj[1]:printSelf()
-                print("\n\nYour cards: ")
-                player:showHand()
+            playerTable[1]:addCard(newDeck)
+            playerTable[1]:showNameAndCards() -- draw a card and show new hand
+            if(playerTable[1].totalValue > 21) then 
+                io.write("BUSTED-------------\nYou are all getting new hands...")
+                Game.startNewRoundTableVers(newDeck, playerTable)
+                for index, player in pairs(playerTable) do
+                    player:addCard(newDeck) -- deal two cards
+                    player:addCard(newDeck)
+                    if(playerTable.name == "Dealer") then player.handObj[1]:printSelf() -- dealer only shows one card
+                    else player:showNameAndCards()
+                    end
+                end
             end
         end
-        if(nextMove == "stay") then 
-            print("\nDealers hand: ")
-            dealer:showHand()
-            if (dealer.totalValue > player.totalValue) then
-                io.write("The dealer's hand had value " .. dealer.totalValue .. " and yours had " .. player.totalValue .. " \n")
-                print("\nThe dealer wins this round")
-            else  io.write("The dealer's hand had value " .. dealer.totalValue .. " and yours had " .. player.totalValue .." \nYOU WIN!!!!!!!!\n\n\n")
+        if(nextMove == "stay") then  -- keep what you've got and see if you won
+            currentBestPlayer = {value = 0, index = 0 } -- check who is the best player
+            for index, player in pairs(playerTable) do
+                if (player.totalValue > currentBestPlayer.value and player.totalValue<22) then -- if you busted you can't win
+                    currentBestPlayer.value = player.totalValue
+                    currentBestPlayer.index = index
+                end
+            end
+            if(currentBestPlayer.index ~=1) then
+                print("You lost! Here was the best player's hand")
+                playerTable[currentBestPlayer.index]:showNameAndCards()
+                print("Here were your cards: ")
+                playerTable[1]:showNameAndCards()
+            else 
+                print("YOU WON!")
+                print("Here were your cards: ")
+                playerTable[1]:showNameAndCards()
+            end
             io.write("You and the dealer are getting new hands...")
-            Game.startNewRound(newDeck, player, dealer)
-            dealer:addCard(newDeck)
-            player:addCard(newDeck)
-            dealer:addCard(newDeck)
-            player:addCard(newDeck)
-            print("\nDealers card: ")
-            dealer.handObj[1]:printSelf()
-            print("\n\nYour cards: ")
-            player:showHand()
+            Game.startNewRoundTableVers(newDeck, playerTable) -- clear out all of the hands
+            for index, player in pairs(playerTable) do
+                player:addCard(newDeck) -- deal two cards
+                player:addCard(newDeck)
+                if(playerTable.name == "Dealer") then player.handObj[1]:printSelf() -- dealer only shows one card
+                else player:showNameAndCards()
+                end
+            end
+            end
+            print("What's your next move?\n")
+            nextMove = io.read()
             end
         end
-    print("What's your next move?\n")
-    nextMove = io.read()
-    end
-end
 
 
-
-
---[[
-
-numFellowPlayers = arg[1]
-print(numFellowPlayers)
-
-Game = {
-    gameObj = {},
-    handsCount = 0,
-    gameCount = 0,
-
-    newGame = function(self)
-        self.gameCount = self.gameCount + 1
-        local newDeck = Deck:new{}
-        newDeck:printDeck()
-
-        local player = Hand:new{}
-        table.insert(self.gameObj, 1, player)
-        local dealer = Hand:new{}
-        table.insert(self.gameObj, 2, player)
-
-        for i=1, 2, 1 do
-            player.addCard()
-            dealer.addCard()
-        end
-        player.showHand()
-
-
-    end,
-
-}
-
-
-function Game:new (gameObj)
-    gameObj = gameObj or {}
-    setmetatable(gameObj, self)
-    self.__index = self
-    gameObj:newGame()
-    return gameObj
-end
-]]
-
---MAIN
---local newGame = Game:new{}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---[[
-    Player = {
-    playersHands = {},
-    players = 2,
-
-    --Gives each player 1 card from the top of the deck, cycles thru again
-    --Player 2 = dealer
-    newDeal = function (self)
-        self:checkDeck()
-        local tempCard
-
-        for i=1, players, 1 do         
-            tempCard = table.remove(self.deckCards, 1)
-            self.cardsInDeck = cardsInDeck - 1;           
-            self.playersHands[i] = Hand:new{self:addCard(tempCard)}           
-        end
-        for i=1, players, 1 do
-            tempCard = table.remove(self.deckCards, 1) 
-            self.cardsInDeck = cardsInDeck - 1;
-            table.insert(self.playersHands, i, self:addCard(tempCard))
-        end
-    end,
-
-    hit = function (self)
-        local tempCard = table.remove(self.deckCards, 1) 
-        self.cardsInDeck = cardsInDeck - 1;
-        table.insert(self.playersHands, 1, self:addCard(tempCard))
-    end,
-
-end,
-}
-
-function Player:new (playerObj)
-    playerObj = playerObj or {}
-    setmetatable(playerObj, self)
-    self.__index = self
-    playerObj:newDeal()
-    return playerObj
-end
-]]
-
-
-
-
-
-
-
---[[
-
-
-Table Reference:
-TableThatActsLikeAnObject = {
-    myInt = 1,
-    myDouble = 2.5,
-    addMyStuff = function (self)
-        myTotal = self.myInt + self.myDouble
-        print("Wow, my total adds up to " + myTotal)
-        return myTotal
-    end
-}
-
-
-
-
-
-
-print("Here")
-
-file = io.open("C:/Users/thefi/Desktop/F Zone/2022-1 Spring Semester/IT 327/LuaProject/WordCount/Matthew.txt", "r")
-lines = file:lines()
-
-function split (inputstr, sep)
-    if sep == nil then
-            sep = "%s" -- %s is whitespace in lua
-    end
-    local t={}
-    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do
-            table.insert(t, str)
-    end
-    return t
-end
-
-tab = split("Split me up boss", " ")
-for i, v in pairs(tab) do
-    print(i .. " " .. v)
-end
-wordCount = {}
-
-function manageWords (wordTable, word)
-    if wordTable[word] ~= nil then
-        wordTable[word] = wordTable[word] + 1
-    else wordTable[word] = 1
-    end
-end
-print("Contents of file:");
-for line in lines do
-    words = split(line, " ")
-    for i, v in pairs(words) do
-        first,last = string.find(v,"%w*'?%w?")
-        if first ~=nil and last~=nil then
-            fixedWord = string.sub(v,first,last)
-            manageWords(wordCount,fixedWord)
-    end
-    end
-    print("\n")
-end
-
-for key,value in pairs(wordCount) do
-    print(key .. " appeared " .. value .. " times!")
-end
-
-
-
-
-
-]]
