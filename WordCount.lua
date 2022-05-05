@@ -84,9 +84,10 @@ end
 --]]
 print("Calling for function to see what the top X=10 most frequent words were in the text: ".. textfile );
 topX(WordCount,10)
-print("Calling for function to see what 5 most INFREQUENT words were in the text: ".. textfile );
 
-bottomX(WordCount,5)
+--print("Calling for function to see what 5 most INFREQUENT words were in the text: ".. textfile );
+--bottomX(WordCount,5)
+
 --print("Amount of memory with WordCount fully loaded... " .. collectgarbage("count") .. " kb")
 WordCount = nil
 print("Amount of memory with WordCount set to nil but garbage NOT YET collected... " .. collectgarbage("count") .. " kb")
