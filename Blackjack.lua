@@ -5,8 +5,8 @@
 ]]
 
 -- Card object
-Card = { 
-    value=0,
+Card = {  
+    value=0, -- default values: empty
     suit="",
     face="",
 showValue = function (self)
@@ -18,14 +18,12 @@ end,
 showFace = function (self)
     print(self.face)
 end,
-printSelf = function(self)
+printSelf = function(self) -- card can display its own values. Ex: Card:printSelf() right now wopuld print none of ""
     if(self.face =="none") then io.write(self.value, " of ", self.suit)
     else io.write(self.face, " of ", self.suit)
     end
 end
 }
-
-
 function Card:new (cardObj)
     cardObj = cardObj or {}   -- create object if user does not provide one
     setmetatable(cardObj, self) -- In this case, we are making
@@ -199,6 +197,7 @@ while (nextMove~="quit") do
     dealer:addCard(newDeck)
     player:addCard(newDeck)
     dealer:addCard(newDeck)
+    print("--------------NEW ROUND----------------")
     --Hands are dealt, game begins
     print("\nDealers card: ")
     dealer.handObj[1]:printSelf()
@@ -212,9 +211,6 @@ while (nextMove~="quit") do
 
             if(player.totalValue > 21) then 
                 io.write("You and the dealer are getting new hands...")
-                --player:returnCardsToDeck(newDeck)
-                --dealer:returnCardsToDeck(newDeck)
-                --newDeck:shuffleDeck()
                 Game.startNewRound(newDeck, player, dealer)
                 dealer:addCard(newDeck)
                 player:addCard(newDeck)
@@ -232,6 +228,7 @@ while (nextMove~="quit") do
                 io.write("The dealer's hand had value " .. dealer.totalValue .. " and yours had " .. player.totalValue .. " \n")
                 print("\nThe dealer wins this round")
             else  io.write("The dealer's hand had value " .. dealer.totalValue .. " and yours had " .. player.totalValue .." \nYOU WIN!!!!!!!!\n\n\n")
+                
             io.write("You and the dealer are getting new hands...")
             Game.startNewRound(newDeck, player, dealer)
             dealer:addCard(newDeck)
@@ -246,6 +243,8 @@ while (nextMove~="quit") do
     print("What's your next move?\n")
     nextMove = io.read()
     end
+    print("Round ended. Type quit to quit, otherwise you'll start a new round!\n")
+    nextMove = io.read()
 end
 
 

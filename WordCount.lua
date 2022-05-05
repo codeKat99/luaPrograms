@@ -1,4 +1,4 @@
-textfile = 'testfile.txt'
+textfile = arg[1]
 file = io.open(textfile, "r")
 lines = file:lines()
 print("Amount of memory used after opening file, but before loading into table... " .. collectgarbage("count"))
@@ -82,13 +82,13 @@ for key,value in pairs(wordCount) do
     print(key .. " appeared " .. value .. " times!")
 end
 --]]
-print("Amount of memory used with loaded table " .. collectgarbage("count"))
 print("Calling for function to see what the top X=10 most frequent words were in the text: ".. textfile );
 topX(WordCount,10)
 print("Calling for function to see what 5 most INFREQUENT words were in the text: ".. textfile );
 
-bottomX(wordCount,5)
-wordCount = nil
-print("Amount of memory with larget table set to nil... " .. collectgarbage("count"))
+bottomX(WordCount,5)
+--print("Amount of memory with WordCount fully loaded... " .. collectgarbage("count") .. " kb")
+WordCount = nil
+print("Amount of memory with WordCount set to nil but garbage NOT YET collected... " .. collectgarbage("count") .. " kb")
 collectgarbage("collect")
-print("Amount of memory with larget table set to nil and call to collect garbage immediately.... " .. collectgarbage("count"))
+print("Amount of memory with WordCount set to nil and call to collect garbage immediately.... " .. collectgarbage("count") .. " kb")
