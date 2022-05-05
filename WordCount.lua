@@ -1,29 +1,27 @@
-textfile = arg[1]
-file = io.open(textfile, "r")
-lines = file:lines()
+if arg[1] == nil then textfile = "testfile.txt"
+else textfile = arg[1]  -- get name of file from arguments
+end
+
+file = io.open(textfile, "r") -- open target file
+lines = file:lines() -- read file
 print("Amount of memory used after opening file, but before loading into table... " .. collectgarbage("count"))
-function split (inputstr, sep)
-    if sep == nil then
+
+function split (input, separator) -- function that splits up a line based on the given separator, or whitespace if nil
+    if separator == nil then
             sep = "%s" -- %s is whitespace in lua
     end
     local t={}
-    for str in string.gmatch(inputstr, "([^"..sep.."]+)") do -- We do a little regex!
-            table.insert(t, str)
+    for str in string.gmatch(input, "([^"..separator.."]+)") do -- We do a little regex! based on the separator
+            table.insert(t, str) -- insert new element
     end
-    return t
-end
---[[
-tab = split("Split me up boss", " ")
-for i, v in pairs(tab) do
-    print(i .. " " .. v)
+    return t -- returns the table
+
 end
 
---]]
-
-function manageWords (wordTable, word)
-    if wordTable[word] ~= nil then
+function manageWords (wordTable, word) -- take a table containing word, #appearing pairs, and a new word
+    if wordTable[word] ~= nil then -- if it exists, increment it
         wordTable[word] = wordTable[word] + 1
-    else wordTable[word] = 1
+    else wordTable[word] = 1 -- otherwise, create the key,value pair
     end
 end
 
@@ -38,6 +36,7 @@ function topX(wordTable, numWords)  -- take a table of word,#appearing pairs, an
                 tempWordPair.word=word
             end
         end
+        if(tempWordPair.word =="") then return topXWords end -- if tempWordPair.word is still "", there are not enough words equal to numWords.
         topXWords[tempWordPair.word]=tempWordPair.num -- record the new top word.
         print(tempWordPair.word .. " appeared " .. tempWordPair.num .. " times!")
     end
@@ -45,7 +44,7 @@ function topX(wordTable, numWords)  -- take a table of word,#appearing pairs, an
 end
 
 
-function bottomX(wordTable, numWords)
+function bottomX(wordTable, numWords) -- works similarly to topX, but in reverse
     local bottomXWords = {} 
     for i=1, numWords,1 do 
         local tempWordPair = {num=99999999, word=""} 
@@ -55,6 +54,7 @@ function bottomX(wordTable, numWords)
                 tempWordPair.word=word
             end
         end
+        if(tempWordPair.word =="") then return bottomXWords end -- if tempWordPair.word is still "", there are not enough words equal to numWords.
         bottomXWords[tempWordPair.word]=tempWordPair.num
         print(tempWordPair.word .. " appeared " .. tempWordPair.num .. " times!")
     end
@@ -77,15 +77,15 @@ for line in lines do
 end
 
 
---[[]
-for key,value in pairs(wordCount) do
+
+for key,value in pairs(WordCount) do
     print(key .. " appeared " .. value .. " times!")
 end
---]]
-print("Calling for function to see what the top X=10 most frequent words were in the text: ".. textfile );
+
+print("\n---------------------\nCalling for function to see what the top X=10 most frequent words were in the text: ".. textfile );
 topX(WordCount,10)
 
---print("Calling for function to see what 5 most INFREQUENT words were in the text: ".. textfile );
+--print(""\n---------------------\nCalling for function to see what 5 most INFREQUENT words were in the text: ".. textfile );
 --bottomX(WordCount,5)
 
 --print("Amount of memory with WordCount fully loaded... " .. collectgarbage("count") .. " kb")
